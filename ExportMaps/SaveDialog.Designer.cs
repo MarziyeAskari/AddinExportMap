@@ -36,6 +36,8 @@
             this.btnApply = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.txtFilePrefix = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.cbxFields = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.btnResolution)).BeginInit();
             this.SuspendLayout();
             // 
@@ -125,11 +127,30 @@
             this.txtFilePrefix.TabIndex = 7;
             this.txtFilePrefix.Text = "Export";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(562, 108);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(72, 17);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "انتخاب فیلد نام";
+            // 
+            // cbxFields
+            // 
+            this.cbxFields.FormattingEnabled = true;
+            this.cbxFields.Location = new System.Drawing.Point(215, 105);
+            this.cbxFields.Name = "cbxFields";
+            this.cbxFields.Size = new System.Drawing.Size(302, 24);
+            this.cbxFields.TabIndex = 10;
+            // 
             // SaveDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(654, 162);
+            this.Controls.Add(this.cbxFields);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.txtFilePrefix);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.btnApply);
@@ -143,6 +164,7 @@
             this.Name = "SaveDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "خروجی نقشه";
+            this.Load += new System.EventHandler(this.SaveDialog_Load);
             ((System.ComponentModel.ISupportInitialize)(this.btnResolution)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -159,5 +181,7 @@
         private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtFilePrefix;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox cbxFields;
     }
 }

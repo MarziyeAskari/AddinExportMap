@@ -8,7 +8,7 @@
   <Company></Company>
   <Date>4/8/2022</Date>
   <Targets>
-    <Target name="Desktop" version="10.8" />
+    <Target name="Desktop" version="10.4" />
   </Targets>
   <AddIn language="CLR" library="ExportMaps.dll" namespace="ExportMaps">
     <ArcMap>

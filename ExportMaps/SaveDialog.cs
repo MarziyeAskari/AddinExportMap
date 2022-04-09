@@ -4,7 +4,6 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Output;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.esriSystem;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,11 +20,12 @@ namespace ExportMaps
     {
         public int resolution { get; set; }
         public String path { get; set; }
+        private IFeatureLayer featureLayer;
 
-
-        public SaveDialog()
+        public SaveDialog(IFeatureLayer featureLayer)
         {
             InitializeComponent();
+            this.featureLayer = featureLayer;
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -42,6 +42,8 @@ namespace ExportMaps
             }
 
         }
+
+
         private void btnApply_Click(object sender, EventArgs e)
         {
             exportMapFunction();
@@ -52,30 +54,12 @@ namespace ExportMaps
         {
             try
             {
-                ArcMap.Application.CurrentTool = null;
+
                 var activeView = ArcMap.Document.ActiveView;
                 var map = activeView.FocusMap;
                 if (!System.IO.Directory.Exists(txtPath.Text))
                 {
                     MessageBox.Show("آدرس وارد شده نامعتبر است");
-                    return;
-                }
-                if (map.LayerCount == 0)
-                {
-                    MessageBox.Show("لطفا لایه ای اضافه کنید");
-                    return;
-                }
-                var layer = map.get_Layer(0);
-                if (!(layer is IFeatureLayer))
-                {
-                    MessageBox.Show("لطفا لایه پلیگونی اضافه کنید");
-                    return;
-                }
-                var featureLayer = (FeatureLayer)layer;
-
-                if (featureLayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolygon)
-                {
-                    MessageBox.Show("لطفا لایه پلیگونی اضافه کنید");
                     return;
                 }
 
@@ -110,12 +94,14 @@ namespace ExportMaps
                 simpleRender.Symbol = pFillSymbol as ISymbol;
                 pGeoFeLayer.Renderer = (IFeatureRenderer)simpleRender;
 
+
                 map.AddLayer(featureLayerSymbology);
                 activeView.Refresh();
 
                 var feature = featureCursor.NextFeature();
                 var i = 1;
 
+                var oidFieldName = featureLayer.FeatureClass.OIDFieldName;
                 while (feature != null)
                 {
                     //todo 
@@ -132,7 +118,7 @@ namespace ExportMaps
 
 
                     IFeatureLayerDefinition2 oDefQuery = featureLayerSymbology as IFeatureLayerDefinition2;
-                    oDefQuery.DefinitionExpression = "OBJECTID" + " <> " + feature.OID;
+                    oDefQuery.DefinitionExpression = oidFieldName + " <> " + feature.OID;
 
                     exportMap(activeView, feature, resolution, path);
 
@@ -148,8 +134,26 @@ namespace ExportMaps
             }
             catch (Exception ex)
             {
-                MessageBox.Show("تبدیل با خطا مواجه شد\r\n"+ex.ToString(), "خطا");
+                MessageBox.Show("تبدیل با خطا مواجه شد\r\n" + ex.ToString(), "خطا");
             }
+        }
+
+        void FillFields(IFeatureLayer featureLayer)
+        {
+            var fields = featureLayer.FeatureClass.Fields;
+            for (int i = 0; i < fields.FieldCount; i++)
+            {
+                var field = fields.Field[i];
+
+                cbxFields.Items.Add(new
+                {
+                    id = field.Name,
+                    name = string.Format("{0}({1})", field.Name, field.AliasName)
+                });
+            }
+
+            cbxFields.DisplayMember = "name";
+            cbxFields.ValueMember = "id";
         }
 
         IFeatureLayer CloneFeatureLayer(IFeatureLayer old_fLayer)
@@ -179,7 +183,13 @@ namespace ExportMaps
             ESRI.ArcGIS.Output.IExport export = new ESRI.ArcGIS.Output.ExportPNGClass();
             //var exportFrame = activeView.ExportFrame;
             var featureExtant = (feature.Shape as IPolygon).Envelope;
-            var namefeature = string.Format("{0}\\{1}_{2}.PNG",path,txtFilePrefix.Text,feature.OID.ToString());
+
+            var fieldTag = feature.OID.ToString();
+            if (cbxFields.SelectedIndex >= 0)
+                fieldTag = feature.Value[cbxFields.SelectedIndex].ToString();
+
+            var namefeature = string.Format("{0}\\{1}{2}.PNG", path,
+                txtFilePrefix.Text, fieldTag);
             export.Resolution = resolution;
             export.ExportFileName = namefeature;
 
@@ -194,6 +204,11 @@ namespace ExportMaps
             export.FinishExporting();
             export.Cleanup();
 
+        }
+
+        private void SaveDialog_Load(object sender, EventArgs e)
+        {
+            FillFields(featureLayer);
         }
     }
 }
