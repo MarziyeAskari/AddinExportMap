@@ -2,6 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using ESRI.ArcGIS.Carto;
+using System.Windows.Forms;
+using ESRI.ArcGIS.Geodatabase;
+using ESRI.ArcGIS.Geometry;
+using ESRI.ArcGIS.Output;
+using System.Threading;
+
+
 
 namespace ExportMaps
 {
@@ -9,19 +17,21 @@ namespace ExportMaps
     {
         public btnPrint()
         {
+            
         }
 
         protected override void OnClick()
         {
-            //
-            //  TODO: Sample code showing how to access button host
-            //
-            ArcMap.Application.CurrentTool = null;
+            var dialog = new SaveDialog();
+            dialog.ShowDialog();
+
         }
         protected override void OnUpdate()
         {
             Enabled = ArcMap.Application != null;
         }
+
+      
     }
 
 }
