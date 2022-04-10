@@ -100,15 +100,11 @@ namespace ExportMaps
                 activeView.Refresh();
 
                 var feature = featureCursor.NextFeature();
-                var i = 1;
 
                 var oidFieldName = featureLayer.FeatureClass.OIDFieldName;
 
                 while (feature != null)
                 {
-                    //todo 
-                    if (i++ > 5)
-                        break;
 
                     var envelope = (IEnvelope)((IClone)(feature.Shape as IPolygon).Envelope).Clone();
                     envelope.Expand(1.1, 1.1, true);
