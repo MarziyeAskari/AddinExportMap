@@ -72,9 +72,9 @@ namespace ExportMaps
                 fillcolor.Red = 255;
 
                 var linecolor = new RgbColor();
-                linecolor.Blue = 250;
-                linecolor.Green = 250;
-                linecolor.Red = 250;
+                linecolor.Blue = 255;
+                linecolor.Green = 255;
+                linecolor.Red = 255;
 
                 pOutLineSymbol.Color = linecolor;
                 pOutLineSymbol.Width = 0;
