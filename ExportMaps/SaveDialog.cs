@@ -56,7 +56,7 @@ namespace ExportMaps
             {
 
                 var activeView = ArcMap.Document.ActiveView;
-                var map = activeView.FocusMap;
+                var map = ArcMap.Document.FocusMap;
                 if (!System.IO.Directory.Exists(txtPath.Text))
                 {
                     MessageBox.Show("آدرس وارد شده نامعتبر است");
@@ -96,12 +96,14 @@ namespace ExportMaps
 
 
                 map.AddLayer(featureLayerSymbology);
+                var mapView = map as IActiveView;
                 activeView.Refresh();
 
                 var feature = featureCursor.NextFeature();
                 var i = 1;
 
                 var oidFieldName = featureLayer.FeatureClass.OIDFieldName;
+
                 while (feature != null)
                 {
                     //todo 
@@ -110,15 +112,16 @@ namespace ExportMaps
 
                     var envelope = (IEnvelope)((IClone)(feature.Shape as IPolygon).Envelope).Clone();
                     envelope.Expand(1.1, 1.1, true);
-                    activeView.Extent = envelope;
+                    mapView.Extent = envelope;
 
-                    activeView.Refresh();
                     path = txtPath.Text;
                     resolution = (int)btnResolution.Value;
 
 
                     IFeatureLayerDefinition2 oDefQuery = featureLayerSymbology as IFeatureLayerDefinition2;
                     oDefQuery.DefinitionExpression = oidFieldName + " <> " + feature.OID;
+
+                    mapView.Refresh();
 
                     exportMap(activeView, feature, resolution, path);
 
@@ -127,6 +130,7 @@ namespace ExportMaps
 
                 map.DeleteLayer(featureLayerSymbology);
                 featureLayer.Visible = layerVisibility;
+                
                 activeView.Refresh();
 
                 MessageBox.Show("اتمام عملیات");
@@ -199,7 +203,7 @@ namespace ExportMaps
 
             export.PixelBounds = envelope;
             int hdc = export.StartExporting();
-
+            
             activeView.Output(hdc, resolution, ref exportRECT, null, null);
             export.FinishExporting();
             export.Cleanup();
