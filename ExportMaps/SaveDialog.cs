@@ -64,7 +64,9 @@ namespace ExportMaps
                 }
 
                 ISimpleFillSymbol pFillSymbol = new SimpleFillSymbolClass();
+                ISimpleFillSymbol pFillSymbolBound = new SimpleFillSymbolClass();
                 ISimpleLineSymbol pOutLineSymbol = new SimpleLineSymbolClass();
+                ISimpleLineSymbol pOutLineSymbolBound = new SimpleLineSymbolClass();
 
                 var fillcolor = new RgbColor();
                 fillcolor.Blue = 255;
@@ -72,31 +74,51 @@ namespace ExportMaps
                 fillcolor.Red = 255;
 
                 var linecolor = new RgbColor();
-                linecolor.Blue = 255;
-                linecolor.Green = 255;
-                linecolor.Red = 255;
+                linecolor.Blue = 0;
+                linecolor.Green = 0;
+                linecolor.Red = 0;
 
-                pOutLineSymbol.Color = linecolor;
+                pOutLineSymbol.Color = fillcolor;
                 pOutLineSymbol.Width = 0;
+
+                pOutLineSymbolBound.Color = linecolor;
+                pOutLineSymbolBound.Width = 3;
 
                 pFillSymbol.Color = fillcolor;
                 pFillSymbol.Outline = pOutLineSymbol;
+
+                
+                pFillSymbolBound.Style = esriSimpleFillStyle.esriSFSHollow;
+                //pFillSymbolBound.Color = ;
+                pFillSymbolBound.Outline = pOutLineSymbolBound;
 
 
 
                 var featureCursor = featureLayer.Search(null, false);
                 var layerVisibility = featureLayer.Visible;
                 featureLayer.Visible = false;
-                var featureLayerSymbology = CloneFeatureLayer(featureLayer);
+                var featureLayerSymbology = CloneFeatureLayer(featureLayer,false);
+                var featureLayerBound = CloneFeatureLayer(featureLayer,true);
 
                 IGeoFeatureLayer pGeoFeLayer = (IGeoFeatureLayer)featureLayerSymbology;
                 ISimpleRenderer simpleRender = new SimpleRendererClass();
                 simpleRender.Symbol = pFillSymbol as ISymbol;
                 pGeoFeLayer.Renderer = (IFeatureRenderer)simpleRender;
 
+                IGeoFeatureLayer pGeoFeLayerBound = (IGeoFeatureLayer)featureLayerBound;
+                ISimpleRenderer simpleRenderBound = new SimpleRendererClass();
+                simpleRenderBound.Symbol = pFillSymbolBound as ISymbol;
+                pGeoFeLayerBound.Renderer = (IFeatureRenderer)simpleRenderBound;
+
 
                 map.AddLayer(featureLayerSymbology);
+                map.AddLayer(featureLayerBound);
+                featureLayerBound.Visible = true;
+
                 var mapView = map as IActiveView;
+
+                path = txtPath.Text;
+                resolution = (int)btnResolution.Value;
                 activeView.Refresh();
 
                 var feature = featureCursor.NextFeature();
@@ -110,12 +132,14 @@ namespace ExportMaps
                     envelope.Expand(1.1, 1.1, true);
                     mapView.Extent = envelope;
 
-                    path = txtPath.Text;
-                    resolution = (int)btnResolution.Value;
 
 
                     IFeatureLayerDefinition2 oDefQuery = featureLayerSymbology as IFeatureLayerDefinition2;
                     oDefQuery.DefinitionExpression = oidFieldName + " <> " + feature.OID;
+
+                    IFeatureLayerDefinition2 oDefQueryBound = featureLayerBound as IFeatureLayerDefinition2;
+                    oDefQueryBound.DefinitionExpression = oidFieldName + " = " + feature.OID;
+
 
                     mapView.Refresh();
 
@@ -125,7 +149,8 @@ namespace ExportMaps
                 }
 
                 map.DeleteLayer(featureLayerSymbology);
-                featureLayer.Visible = layerVisibility;
+                map.DeleteLayer(featureLayerBound);
+                featureLayer.Visible = true;
                 
                 activeView.Refresh();
 
@@ -156,7 +181,7 @@ namespace ExportMaps
             cbxFields.ValueMember = "id";
         }
 
-        IFeatureLayer CloneFeatureLayer(IFeatureLayer old_fLayer)
+        IFeatureLayer CloneFeatureLayer(IFeatureLayer old_fLayer, bool a)
         {
             var new_fLayer = new FeatureLayer() as IFeatureLayer;
 
@@ -174,7 +199,13 @@ namespace ExportMaps
             (new_fLayer as IGeoFeatureLayer).AnnotationPropertiesID = (old_fLayer as IGeoFeatureLayer).AnnotationPropertiesID;
 
             //update the new properties for this layer
-            new_fLayer.Name = "MaskLayer";
+            if (a)
+            {
+                new_fLayer.Name = old_fLayer.Name;
+                return new_fLayer;
+            }
+               
+            new_fLayer.Name = "";
             return new_fLayer;
 
         }
@@ -190,7 +221,7 @@ namespace ExportMaps
 
             var namefeature = string.Format("{0}\\{1}{2}.PNG", path,
                 txtFilePrefix.Text, fieldTag);
-            export.Resolution = resolution;
+            //export.Resolution = resolution;
             export.ExportFileName = namefeature;
 
             ESRI.ArcGIS.esriSystem.tagRECT exportRECT = activeView.ExportFrame;

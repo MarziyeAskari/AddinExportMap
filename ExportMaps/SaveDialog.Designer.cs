@@ -85,7 +85,7 @@
             this.btnResolution.Size = new System.Drawing.Size(120, 22);
             this.btnResolution.TabIndex = 3;
             this.btnResolution.Value = new decimal(new int[] {
-            320,
+            300,
             0,
             0,
             0});
